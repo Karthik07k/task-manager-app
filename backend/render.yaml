@@ -1,0 +1,22 @@
+services:
+  # Backend API service
+  - type: web
+    name: task-manager-backend
+    runtime: docker
+    repo: https://github.com/Karthik07k/task-manager-app.git
+    branch: main
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/*.jar
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        value: jdbc:mysql://ugvs7ixxabxddgrp:VGPqHe6HCYk2z9Y7Kj9O@bs3rcr8mcuhvrjtmnpva-mysql.services.clever-cloud.com:3306/bs3rcr8mcuhvrjtmnpva?createDatabaseIfNotExist=true
+      - key: DATABASE_USERNAME
+        value: ugvs7ixxabxddgrp
+      - key: DATABASE_PASSWORD
+        value: VGPqHe6HCYk2z9Y7Kj9O
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: PORT
+        value: "9000"
+    autoDeploy: true
