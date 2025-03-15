@@ -5,6 +5,9 @@ services:
     runtime: docker
     repo: https://github.com/Karthik07k/task-manager-app.git
     branch: main
+    rootDir: backend
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
     buildCommand: ./mvnw clean package -DskipTests
     startCommand: java -jar target/*.jar
     healthCheckPath: /api/health
@@ -19,4 +22,6 @@ services:
         value: prod
       - key: PORT
         value: "9000"
+      - key: JWT_SECRET_KEY
+        value: "5DABhULhh1mJFmeSweN17rHlW3a/FGhLYvItZ9K7A2AArWuwHdaia9qc7DykAMIcSh5ACyGZp1OK0IfAehR3GA=="
     autoDeploy: true
