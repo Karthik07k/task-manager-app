@@ -15,14 +15,27 @@ public class SecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 
+//	@Bean
+//	public WebMvcConfigurer corsConfigurer() {
+//		return new WebMvcConfigurer() {
+//			@Override
+//			public void addCorsMappings(CorsRegistry registry) {
+//				registry.addMapping("/api/**").allowedOrigins("http://localhost:3000")
+//						.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS").allowedHeaders("*")
+//						.allowCredentials(true).exposedHeaders("Authorization");
+//			}
+//		};
+//	}
+
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
-				registry.addMapping("/api/**").allowedOrigins("http://localhost:3000")
-						.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS").allowedHeaders("*")
-						.allowCredentials(true).exposedHeaders("Authorization");
+				registry.addMapping("/api/**").allowedOrigins("http://localhost:3000", // For local development
+						"https://task-manager-nk.vercel.app" // Your Vercel deployment URL
+				).allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS").allowedHeaders("*").allowCredentials(true)
+						.exposedHeaders("Authorization");
 			}
 		};
 	}
