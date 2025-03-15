@@ -3,6 +3,7 @@ package com.taskmanager.Security;
 import java.security.Key;
 import java.util.Date;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Jwts;
@@ -12,12 +13,15 @@ import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtUtil {
 
-	private static final String SECRET_KEY = "your_secret_key_which_should_be_very_long";
-	private static final long ACCESS_TOKEN_EXPIRATION = 604800000; //900000; // 15 minutes
+//	private static final String SECRET_KEY = "your_secret_key_which_should_be_very_long";
+	private static final long ACCESS_TOKEN_EXPIRATION = 604800000; // 900000; // 15 minutes
 	private static final long REFRESH_TOKEN_EXPIRATION = 604800000; // 7 days
 
+	@Value("${jwt.secret}")
+	private String secretKey;
+
 	private Key getSigningKey() {
-		return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
+		return Keys.hmacShaKeyFor(secretKey.getBytes());
 	}
 
 	public String generateAccessToken(String username) {
