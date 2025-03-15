@@ -1,4 +1,4 @@
-'Use client'
+"use client"
 import { ToastContainer, toast, Id } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRef, useEffect } from "react";
