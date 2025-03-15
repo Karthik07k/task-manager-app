@@ -1,10 +1,10 @@
 'use client';
 
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import ToastNotification from '@/components/notification/ToastNotification';
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 const theme = createTheme({
   palette: {

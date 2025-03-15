@@ -1,12 +1,11 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import TaskList from '@/components/tasks/TaskList';
-import { Container, Typography, Box, useTheme, useMediaQuery, TextField, InputAdornment } from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material';
+import { Box, Container, Typography, useMediaQuery, useTheme } from '@mui/material';
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function TasksPage() {
+function TasksPageContent() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const searchParams = useSearchParams();
@@ -51,5 +50,13 @@ export default function TasksPage() {
       </Box>
       <TaskList filterStatus={status} />
     </Container>
+  );
+}
+
+export default function TasksPage() {
+  return (
+    <Suspense fallback={<div>Loading tasks...</div>}>
+      <TasksPageContent />
+    </Suspense>
   );
 }

@@ -1,21 +1,21 @@
 'use client'
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
+import { LockOutlined } from '@mui/icons-material';
 import {
-  Container,
-  Box,
-  Typography,
-  TextField,
-  Button,
-  Paper,
   Alert,
-  Stack,
+  Box,
+  Button,
+  CircularProgress,
+  Container,
   Link as MuiLink,
-  CircularProgress
+  Paper,
+  Stack,
+  TextField,
+  Typography
 } from '@mui/material';
 import Link from 'next/link';
-import { LockOutlined } from '@mui/icons-material';
-import { api } from '@/lib/api';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function RegisterForm() {
   const router = useRouter();

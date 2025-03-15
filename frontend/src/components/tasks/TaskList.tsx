@@ -1,38 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '@/app/(auth)/baseURL';
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import {
+  Box,
+  Button,
+  Card,
+  CardContent,
+  Chip,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  FormControl,
+  Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
   Paper,
-  Typography,
+  Select,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
-  Chip,
-  IconButton,
   TablePagination,
-  Dialog,
+  TableRow,
+  TextField,
+  Typography,
   useMediaQuery,
   useTheme,
-  Card,
-  CardContent,
-  Grid,
-  Box,
-  Button,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  TextField,
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import axios from 'axios';
-import { API_BASE_URL } from '@/app/(auth)/baseURL';
+import { useEffect, useState } from 'react';
 import TaskForm from './TaskForm';
-import { MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 
 interface TaskListProps {
   filterStatus?: any;
@@ -100,27 +103,27 @@ export default function TaskList({ filterStatus = 'all', searchQuery = '' }: Tas
   }
 }, [filterStatus]);
 
-const filteredTasks = tasks.filter((task: any) => {
-  let statusMatch = true;
+// const filteredTasks = tasks.filter((task: any) => {
+//   let statusMatch = true;
   
-  if (filterStatus !== 'all') {
-    if (filterStatus === 'upcoming') {
-      // For upcoming tasks: due date is in the future AND not completed
-      statusMatch = new Date(task.dueDate) > new Date() && task.status !== 'COMPLETED';
-    } else if (filterStatus === 'completed') {
-      statusMatch = task.status === 'COMPLETED';
-    } else if (filterStatus === 'pending') {
-      statusMatch = task.status === 'PENDING';
-    }
-  }
+//   if (filterStatus !== 'all') {
+//     if (filterStatus === 'upcoming') {
+//       // For upcoming tasks: due date is in the future AND not completed
+//       statusMatch = new Date(task.dueDate) > new Date() && task.status !== 'COMPLETED';
+//     } else if (filterStatus === 'completed') {
+//       statusMatch = task.status === 'COMPLETED';
+//     } else if (filterStatus === 'pending') {
+//       statusMatch = task.status === 'PENDING';
+//     }
+//   }
 
-  const searchMatch = searchQuery === '' ? true :
-    task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (task.category || 'Uncategorized').toLowerCase().includes(searchQuery.toLowerCase());
+//   const searchMatch = searchQuery === '' ? true :
+//     task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//     task.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+//     (task.category || 'Uncategorized').toLowerCase().includes(searchQuery.toLowerCase());
 
-  return statusMatch && searchMatch;
-});
+//   return statusMatch && searchMatch;
+// });
 
   const getFilteredTasks = () => {
     return tasks.filter((task: any) => {

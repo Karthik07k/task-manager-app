@@ -1,39 +1,38 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { showToast } from '@/components/notification/ToastNotification';
+import TaskForm from '@/components/tasks/TaskForm';
 import {
+  Add as AddIcon,
+  DateRange as CalendarIcon,
+  CheckCircle as CompletedIcon,
+  Pending as PendingIcon,
+  Search as SearchIcon,
+  Assignment as TaskIcon,
+} from '@mui/icons-material';
+import {
+  Badge,
   Box,
-  Container,
-  Grid,
-  Paper,
-  Typography,
+  Button,
   Card,
   CardContent,
-  IconButton,
+  Chip,
+  Container,
+  Dialog,
   Divider,
+  Grid,
+  InputAdornment,
   List,
   ListItem,
   ListItemText,
-  Badge,
-  Button,
-  Dialog,
-  InputAdornment,
+  Paper,
   TextField,
-  Chip,
+  Typography
 } from '@mui/material';
-import {
-  Assignment as TaskIcon,
-  CheckCircle as CompletedIcon,
-  Pending as PendingIcon,
-  DateRange as CalendarIcon,
-  Add as AddIcon,
-} from '@mui/icons-material';
-import TaskForm from '@/components/tasks/TaskForm';
-import { useRouter } from 'next/navigation';
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../(auth)/baseURL';
-import { Search as SearchIcon } from '@mui/icons-material';
-import { showToast } from '@/components/notification/ToastNotification';
 
 export default function Dashboard() {
   const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
