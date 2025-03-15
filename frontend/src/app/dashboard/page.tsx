@@ -69,10 +69,12 @@ export default function Dashboard() {
     upcomingTasks: 0,
   });
 
-  const filteredTasks = tasks.filter((task: any) => 
-    task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.description?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+const filteredTasks = Array.isArray(tasks)
+  ? tasks.filter((task: any) =>
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  : [];
 
   // Function to check if a date is today
   const isToday = (dateString:any) => {
@@ -138,29 +140,43 @@ export default function Dashboard() {
           }
         }
       );
+
+     if (Array.isArray(response.data)) {
       setTasks(response.data);
       updateStats(response.data);
-      showToast('Tasks loaded successfully', 'success', 'task-load-success');
-      
-      // Check for due tasks and show notifications after tasks are loaded
       checkDueTasks(response.data);
+    } else {
+      console.log('Unexpected API response format:', response.data);
+      setTasks([]);
+      updateStats([]);
+    }
+
+    showToast('Tasks loaded successfully', 'success', 'task-load-success');
+      
     } catch (error) {
-      console.error('Error fetching tasks:', error);
+      console.log('Error fetching tasks:', error);
       showToast('Failed to load tasks. Please try again.', 'error', 'task-load-error');
     }
   };
 
   const updateStats = (tasks: any) => {
-    const tasksToUse = searchQuery ? filteredTasks : tasks;
-    setStats({
-      totalTasks: tasksToUse.length,
-      completedTasks: tasksToUse.filter((task: any) => task.status === 'COMPLETED').length,
-      pendingTasks: tasksToUse.filter((task: any) => task.status === 'PENDING').length,
-      upcomingTasks: tasksToUse.filter((task: any) => 
-        new Date(task.dueDate) > new Date() && task.status !== 'COMPLETED'
-      ).length
-    });
-  };
+  if (!Array.isArray(tasks)) {
+    console.error('updateStats received a non-array value:', tasks);
+    return;
+  }
+
+  const tasksToUse = searchQuery ? filteredTasks : tasks;
+
+  setStats({
+    totalTasks: tasksToUse.length,
+    completedTasks: Array.isArray(tasksToUse) ? tasksToUse.filter((task: any) => task.status === 'COMPLETED').length : 0,
+    pendingTasks: Array.isArray(tasksToUse) ? tasksToUse.filter((task: any) => task.status === 'PENDING').length : 0,
+    upcomingTasks: Array.isArray(tasksToUse)
+      ? tasksToUse.filter((task: any) => new Date(task.dueDate) > new Date() && task.status !== 'COMPLETED').length
+      : 0,
+  });
+};
+
 
   const handleCardClick = (status?: string) => {
     router.push(`/tasks?status=${status || 'all'}`);

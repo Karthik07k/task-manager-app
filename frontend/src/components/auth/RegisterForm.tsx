@@ -1,5 +1,4 @@
-'use client';
-
+'use client'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -8,11 +7,11 @@ import {
   Typography,
   TextField,
   Button,
-  MenuItem,
   Paper,
   Alert,
   Stack,
-  Link as MuiLink
+  Link as MuiLink,
+  CircularProgress
 } from '@mui/material';
 import Link from 'next/link';
 import { LockOutlined } from '@mui/icons-material';
@@ -24,23 +23,58 @@ export default function RegisterForm() {
     username: '',
     email: '',
     password: '',
-    category: ''
   });
-  const [error, setError] = useState('');
+ const [errors, setErrors] = useState({
+  username: false as boolean | undefined,
+  email: false as boolean | undefined,
+  password: false as boolean | undefined,
+});
+
+  const [errorMessage, setErrorMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const validateEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
+  const validatePassword = (password: string) => {
+    return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/.test(password);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setErrorMessage('');
+
+    const newErrors = {
+      username: formData.username.trim() === '',
+      email: !validateEmail(formData.email),
+      password: !validatePassword(formData.password),
+    };
+
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).some((error) => error)) {
+      setIsLoading(false);
+      return;
+    }
 
     try {
       const response = await api.register(formData);
-      localStorage.setItem('token', response.token);
+    
+      // Store token
+      localStorage.setItem('token', response.accessToken);
+
+      // Store user details
+      const userData = {
+        userId: response.userId,
+        username: response.username,
+        email: response.email
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
       router.push('/dashboard');
     } catch (error) {
-      setError('Registration failed. Please try again.');
+      setErrorMessage('Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -48,38 +82,10 @@ export default function RegisterForm() {
 
   return (
     <Container component="main" maxWidth="xs">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper
-          elevation={3}
-          sx={{
-            p: 4,
-            width: '100%',
-            borderRadius: 2,
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              mb: 3,
-            }}
-          >
-            <Box
-              sx={{
-                bgcolor: 'primary.main',
-                p: 2,
-                borderRadius: '50%',
-                mb: 1,
-              }}
-            >
+      <Box sx={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Paper elevation={3} sx={{ p: 4, width: '100%', borderRadius: 2 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+            <Box sx={{ bgcolor: 'primary.main', p: 2, borderRadius: '50%', mb: 1 }}>
               <LockOutlined sx={{ color: 'white' }} />
             </Box>
             <Typography component="h1" variant="h5" fontWeight="bold">
@@ -97,9 +103,11 @@ export default function RegisterForm() {
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 required
                 variant="outlined"
+                error={errors.username}
+                helperText={errors.username ? 'Username is required' : ''}
               />
 
-              <TextField
+             <TextField
                 fullWidth
                 label="Email Address"
                 name="email"
@@ -108,6 +116,8 @@ export default function RegisterForm() {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
                 variant="outlined"
+                error={errors.email}
+                helperText={errors.email ? "Enter a valid email (e.g., user@example.com)" : ""}
               />
 
               <TextField
@@ -119,16 +129,15 @@ export default function RegisterForm() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 variant="outlined"
+                error={errors.password}
+                helperText={
+                  errors.password
+                    ? "Password must be at least 8 characters, contain letters and numbers (e.g., P@ssw0rd1)"
+                    : ""
+                }
               />
 
-            
-            
-
-              {error && (
-                <Alert severity="error" sx={{ mt: 2 }}>
-                  {error}
-                </Alert>
-              )}
+              {errorMessage && <Alert severity="error">{errorMessage}</Alert>}
 
               <Button
                 type="submit"
@@ -136,17 +145,14 @@ export default function RegisterForm() {
                 variant="contained"
                 size="large"
                 disabled={isLoading}
-                sx={{
-                  mt: 2,
-                  py: 1.5,
-                  fontSize: '1rem',
-                }}
+                sx={{ mt: 2, py: 1.5, fontSize: '1rem' }}
               >
                 {isLoading ? 'Creating Account...' : 'Register'}
+                {isLoading && <CircularProgress size={24} sx={{ color: 'white', ml: 1 }} />}
               </Button>
 
               <Box sx={{ textAlign: 'center', mt: 2 }}>
-                <Link href="/login" passHref>
+                <Link href="/login" legacyBehavior>
                   <MuiLink variant="body2" underline="hover">
                     Already have an account? Sign in
                   </MuiLink>
