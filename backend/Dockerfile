@@ -8,5 +8,6 @@ RUN mvn clean package -DskipTests
 # Run stage
 FROM eclipse-temurin:17-jdk-alpine
 VOLUME /tmp
-COPY --from=build /app/target/*.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+COPY target/*.jar app.jar
+ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport"
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app.jar"]
