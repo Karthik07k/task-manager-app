@@ -1,6 +1,7 @@
 'use client';
 
 import ToastNotification from '@/components/notification/ToastNotification';
+import ToastProvider from '@/components/notification/ToastProvider';
 import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { useRouter } from 'next/navigation';
@@ -43,6 +44,7 @@ export default function RootLayout({
           <CssBaseline />
           {children}
           <ToastNotification />
+          <ToastProvider />
         </ThemeProvider>
       </body>
     </html>

@@ -13,10 +13,12 @@ import {
   Stack,
   TextField,
   useMediaQuery,
-  useTheme
+  useTheme,
+  CircularProgress
 } from '@mui/material';
 import axios from 'axios';
 import { useState } from 'react';
+import { toast } from 'react-hot-toast'; // Import toast
 
 interface TaskFormProps {
   onClose: () => void;
@@ -25,21 +27,22 @@ interface TaskFormProps {
   isEditing?: boolean;
 }
 
-export default function TaskForm({ onClose, onTaskCreated,editTask, isEditing  }: TaskFormProps) {
+export default function TaskForm({ onClose, onTaskCreated, editTask, isEditing }: TaskFormProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const token = localStorage.getItem('token');
+  const [isSubmitting, setIsSubmitting] = useState(false); // Add loading state
 
- const [taskData, setTaskData] = useState({
-  title: editTask?.title || '',
-  description: editTask?.description || '',
-  priority: editTask?.priority || 'MEDIUM',
-  status: editTask?.status || 'PENDING',
-  dueDate: editTask?.dueDate ? new Date(editTask.dueDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-  category: editTask?.category || 'Work' // Add default category
-});
+  const [taskData, setTaskData] = useState({
+    title: editTask?.title || '',
+    description: editTask?.description || '',
+    priority: editTask?.priority || 'MEDIUM',
+    status: editTask?.status || 'PENDING',
+    dueDate: editTask?.dueDate ? new Date(editTask.dueDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    category: editTask?.category || 'Work' // Add default category
+  });
 
-   const updateTask = async (taskData: any, taskId: number) => {
+  const updateTask = async (taskData: any, taskId: number) => {
     const response = await axios.put(
       API_BASE_URL+`/tasks/updateTask/${taskId}`,
       taskData,
@@ -71,31 +74,40 @@ export default function TaskForm({ onClose, onTaskCreated,editTask, isEditing  }
     e.preventDefault();
     const user = JSON.parse(localStorage.getItem('user') || '{}');
 
+    setIsSubmitting(true); // Start loading
+
     try {
       if (isEditing) {
         await updateTask(taskData, editTask.id);
+        toast.success('Task updated successfully!'); // Success toast for update
       } else {
         await createTask(taskData, user.username);
+        toast.success('Task created successfully!'); // Success toast for create
       }
       onTaskCreated?.();
       onClose();
     } catch (error) {
       console.error('Failed to handle task:', error);
+      toast.error(isEditing 
+        ? 'Failed to update task. Please try again.' 
+        : 'Failed to create task. Please try again.'); // Error toast
+    } finally {
+      setIsSubmitting(false); // Stop loading regardless of outcome
     }
   };
 
   const categories = [
-  'Work',
-  'Personal',
-  'Shopping',
-  'Health',
-  'Education',
-  'Finance',
-  'Home'
-];
+    'Work',
+    'Personal',
+    'Shopping',
+    'Health',
+    'Education',
+    'Finance',
+    'Home'
+  ];
 
   return (
-   <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit}>
       <DialogTitle sx={{ 
         px: isMobile ? 2 : 3,
         py: 2,
@@ -120,6 +132,7 @@ export default function TaskForm({ onClose, onTaskCreated,editTask, isEditing  }
             value={taskData.title}
             onChange={(e) => setTaskData({ ...taskData, title: e.target.value })}
             size={isMobile ? "small" : "medium"}
+            disabled={isSubmitting}
           />
 
           <TextField
@@ -130,25 +143,25 @@ export default function TaskForm({ onClose, onTaskCreated,editTask, isEditing  }
             value={taskData.description}
             onChange={(e) => setTaskData({ ...taskData, description: e.target.value })}
             size={isMobile ? "small" : "medium"}
+            disabled={isSubmitting}
           />
 
-         <FormControl fullWidth size={isMobile ? "small" : "medium"}>
-          <InputLabel>Category</InputLabel>
-          <Select
-            value={taskData.category}
-            onChange={(e) => setTaskData({...taskData, category: e.target.value})}
-            label="Category"
-          >
-            {categories.map((category) => (
-              <MenuItem key={category} value={category}>
-                {category}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+          <FormControl fullWidth size={isMobile ? "small" : "medium"} disabled={isSubmitting}>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={taskData.category}
+              onChange={(e) => setTaskData({...taskData, category: e.target.value})}
+              label="Category"
+            >
+              {categories.map((category) => (
+                <MenuItem key={category} value={category}>
+                  {category}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-
-          <FormControl fullWidth size={isMobile ? "small" : "medium"}>
+          <FormControl fullWidth size={isMobile ? "small" : "medium"} disabled={isSubmitting}>
             <InputLabel>Status</InputLabel>
             <Select
               value={taskData.status}
@@ -161,7 +174,7 @@ export default function TaskForm({ onClose, onTaskCreated,editTask, isEditing  }
             </Select>
           </FormControl>
 
-          <FormControl fullWidth size={isMobile ? "small" : "medium"}>
+          <FormControl fullWidth size={isMobile ? "small" : "medium"} disabled={isSubmitting}>
             <InputLabel>Priority</InputLabel>
             <Select
               value={taskData.priority}
@@ -183,6 +196,7 @@ export default function TaskForm({ onClose, onTaskCreated,editTask, isEditing  }
             value={taskData.dueDate}
             onChange={(e) => setTaskData({ ...taskData, dueDate: e.target.value })}
             size={isMobile ? "small" : "medium"}
+            disabled={isSubmitting}
           />
         </Stack>
       </DialogContent>
@@ -194,6 +208,7 @@ export default function TaskForm({ onClose, onTaskCreated,editTask, isEditing  }
           onClick={onClose} 
           color="inherit"
           size={isMobile ? "small" : "medium"}
+          disabled={isSubmitting}
         >
           Cancel
         </Button>
@@ -202,8 +217,12 @@ export default function TaskForm({ onClose, onTaskCreated,editTask, isEditing  }
           variant="contained"
           color="primary"
           size={isMobile ? "small" : "medium"}
+          disabled={isSubmitting}
+          startIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : null}
         >
-          {isEditing ? 'Update Task' : 'Create Task'}
+          {isSubmitting 
+            ? (isEditing ? 'Updating...' : 'Creating...') 
+            : (isEditing ? 'Update Task' : 'Create Task')}
         </Button>
       </DialogActions>
     </form>
