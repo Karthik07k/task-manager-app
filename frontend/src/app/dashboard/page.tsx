@@ -9,6 +9,7 @@ import {
   Pending as PendingIcon,
   Search as SearchIcon,
   Assignment as TaskIcon,
+  Logout as LogoutIcon,
 } from '@mui/icons-material';
 import {
   Badge,
@@ -27,7 +28,12 @@ import {
   ListItemText,
   Paper,
   TextField,
-  Typography
+  Typography,
+  IconButton,
+  Tooltip,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
@@ -68,12 +74,26 @@ export default function Dashboard() {
     upcomingTasks: 0,
   });
 
-const filteredTasks = Array.isArray(tasks)
-  ? tasks.filter((task: any) =>
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  : [];
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+
+  const handleLogoutClick = () => {
+    setLogoutDialogOpen(true);
+  };
+
+  const confirmLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    showToast('Logged out successfully', 'success');
+    router.push('/login');
+    setLogoutDialogOpen(false);
+  };
+
+  const filteredTasks = Array.isArray(tasks)
+    ? tasks.filter((task: any) =>
+        task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        task.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : [];
 
   // Function to check if a date is today
   const isToday = (dateString:any) => {
@@ -140,18 +160,18 @@ const filteredTasks = Array.isArray(tasks)
         }
       );
 
-     if (Array.isArray(response.data)) {
-      setTasks(response.data);
-      updateStats(response.data);
-      checkDueTasks(response.data);
-    } else {
-      console.log('Unexpected API response format:', response.data);
-      setTasks([]);
-      updateStats([]);
-    }
+      if (Array.isArray(response.data)) {
+        setTasks(response.data);
+        updateStats(response.data);
+        checkDueTasks(response.data);
+      } else {
+        console.log('Unexpected API response format:', response.data);
+        setTasks([]);
+        updateStats([]);
+      }
 
-    showToast('Tasks loaded successfully', 'success', 'task-load-success');
-      
+      showToast('Tasks loaded successfully', 'success', 'task-load-success');
+        
     } catch (error) {
       console.log('Error fetching tasks:', error);
       showToast('Failed to load tasks. Please try again.', 'error', 'task-load-error');
@@ -159,23 +179,22 @@ const filteredTasks = Array.isArray(tasks)
   };
 
   const updateStats = (tasks: any) => {
-  if (!Array.isArray(tasks)) {
-    console.error('updateStats received a non-array value:', tasks);
-    return;
-  }
+    if (!Array.isArray(tasks)) {
+      console.error('updateStats received a non-array value:', tasks);
+      return;
+    }
 
-  const tasksToUse = searchQuery ? filteredTasks : tasks;
+    const tasksToUse = searchQuery ? filteredTasks : tasks;
 
-  setStats({
-    totalTasks: tasksToUse.length,
-    completedTasks: Array.isArray(tasksToUse) ? tasksToUse.filter((task: any) => task.status === 'COMPLETED').length : 0,
-    pendingTasks: Array.isArray(tasksToUse) ? tasksToUse.filter((task: any) => task.status === 'PENDING').length : 0,
-    upcomingTasks: Array.isArray(tasksToUse)
-      ? tasksToUse.filter((task: any) => new Date(task.dueDate) > new Date() && task.status !== 'COMPLETED').length
-      : 0,
-  });
-};
-
+    setStats({
+      totalTasks: tasksToUse.length,
+      completedTasks: Array.isArray(tasksToUse) ? tasksToUse.filter((task: any) => task.status === 'COMPLETED').length : 0,
+      pendingTasks: Array.isArray(tasksToUse) ? tasksToUse.filter((task: any) => task.status === 'PENDING').length : 0,
+      upcomingTasks: Array.isArray(tasksToUse)
+        ? tasksToUse.filter((task: any) => new Date(task.dueDate) > new Date() && task.status !== 'COMPLETED').length
+        : 0,
+    });
+  };
 
   const handleCardClick = (status?: string) => {
     router.push(`/tasks?status=${status || 'all'}`);
@@ -237,22 +256,36 @@ const filteredTasks = Array.isArray(tasks)
                     Here's what's happening with your tasks today.
                   </Typography>
                 </Box>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={handleOpenTaskForm}
-                  sx={{
-                    borderRadius: 2,
-                    px: 3,
-                    py: 1.5,
-                    backgroundColor: 'primary.main',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                    },
-                  }}
-                >
-                  Create Task
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                  {/* Logout Button - Now placed next to Create Task button */}
+                  <Button
+                    variant="outlined"
+                    startIcon={<LogoutIcon />}
+                    onClick={handleLogoutClick}
+                    sx={{
+                      borderRadius: 2,
+                      height: '42px', // Match height with Create Task button
+                    }}
+                  >
+                    Logout
+                  </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={handleOpenTaskForm}
+                    sx={{
+                      borderRadius: 2,
+                      px: 3,
+                      py: 1.5,
+                      backgroundColor: 'primary.main',
+                      '&:hover': {
+                        backgroundColor: 'primary.dark',
+                      },
+                    }}
+                  >
+                    Create Task
+                  </Button>
+                </Box>
               </Box>
 
               {/* Search Bar */}
@@ -396,14 +429,14 @@ const filteredTasks = Array.isArray(tasks)
               >
                 Quick Add
               </Button>
-            </Box>
+               </Box>
             <Divider sx={{ my: 2 }} />
             <List>
               {recentTasks.length > 0 ? (
-                recentTasks.map((task:any) => (
+                recentTasks.map((task:any) =>(
                   <ListItem
                     key={task.id}
-                   sx={{
+                    sx={{
                       bgcolor: 'background.paper',
                       mb: 1,
                       borderRadius: 1,
@@ -439,7 +472,7 @@ const filteredTasks = Array.isArray(tasks)
                         '& .MuiBadge-badge': {
                           minWidth: '80px',
                           padding: '5px 10px',
-                          whiteSpace: 'nowrap', // Fixed typo from 'now' to 'nowrap'
+                          whiteSpace: 'nowrap',
                           fontSize: '12px',
                           height: 'auto' // Allow badge to expand as needed
                         },
@@ -467,6 +500,39 @@ const filteredTasks = Array.isArray(tasks)
         fullWidth
       >
         <TaskForm onClose={() => handleCloseTaskForm()} onTaskCreated={handleTaskCreated} />
+      </Dialog>
+
+      <Dialog 
+        open={logoutDialogOpen} 
+        onClose={() => setLogoutDialogOpen(false)}
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            boxShadow: 3
+          }
+        }}
+      >
+        <DialogTitle>Confirm Logout</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to logout?</Typography>
+        </DialogContent>
+        <DialogActions sx={{ pb: 2, px: 3 }}>
+          <Button 
+            onClick={() => setLogoutDialogOpen(false)}
+            variant="outlined"
+            sx={{ borderRadius: 1 }}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmLogout} 
+            color="primary" 
+            variant="contained"
+            sx={{ borderRadius: 1, ml: 1 }}
+          >
+            Logout
+          </Button>
+        </DialogActions>
       </Dialog>
     </Container>
   );
