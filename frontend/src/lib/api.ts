@@ -10,12 +10,20 @@ export const api = {
       },
       body: JSON.stringify(credentials),
     });
-    
-    if (!response.ok) {
-      throw new Error('Login failed');
+
+    let data;
+    try {
+      data = await response.json(); // Read response body
+    } catch (error) {
+      throw new Error("Invalid response from server");
     }
-    
-    return response.json();
+
+    if (!response.ok) {
+      const errorMessage = data?.message || "Login failed";
+      return Promise.reject({ status: response.status, message: errorMessage });
+    }
+
+    return data;
   },
 
  async register(credentials: RegisterCredentials) {
