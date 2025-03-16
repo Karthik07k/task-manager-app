@@ -10,6 +10,16 @@ const nextConfig = {
     // your project has type errors.
     ignoreBuildErrors: true,
   },
+  // Add this redirects function
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/login',
+        permanent: false,
+      },
+    ];
+  },
 }
 
 module.exports = nextConfig

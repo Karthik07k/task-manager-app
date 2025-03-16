@@ -11,6 +11,7 @@ import com.taskmanager.Security.JwtUtil;
 import com.taskmanager.dto.AuthResponse;
 import com.taskmanager.dto.LoginRequest;
 import com.taskmanager.dto.RegisterRequest;
+import com.taskmanager.exceptions.UserNotFoundException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -46,20 +47,16 @@ public class AuthService {
 
 	// Authenticate existing user
 	public AuthResponse authenticate(LoginRequest request) {
+		User user = userRepository.findByUsername(request.getUsername()).orElseThrow(
+				() -> new UserNotFoundException("User is not registered. Please register before logging in."));
 
-		User user = userRepository.findByUsername(request.getUsername())
-				.orElseThrow(() -> new RuntimeException("User not found"));
-		// Compare raw password with encoded password
 		if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
 			throw new BadCredentialsException("Invalid username or password");
 		}
 
 		String accessToken = jwtUtil.generateAccessToken(user.getUsername());
 
-		// Optionally include a refresh token
-		// String refreshToken =
-		// jwtUtil.generateRefreshToken(userDetails.getUsername());
-
 		return new AuthResponse(user.getId(), user.getUsername(), user.getEmail(), accessToken, "Login successful");
 	}
+
 }

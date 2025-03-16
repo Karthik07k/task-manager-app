@@ -48,9 +48,25 @@ export default function LoginForm() {
 
       // Navigate to dashboard
       router.push('/dashboard');
-    } catch (error) {
-      setError('Invalid username or password');
+    } catch (error:any) {
       setIsLoading(false); // Stop loading on error
+      if (error.response) {
+      switch (error.response.status) {
+        case 400:
+          setError('Invalid request. Please check your input.');
+          break;
+        case 401:
+          setError('Invalid username or password.');
+          break;
+        case 404:
+          setError('User not registered. Please sign up first.');
+          break;
+        default:
+          setError('An unexpected error occurred. Please try again.');
+      }
+    } else {
+      setError('Network error. Please check your connection.');
+    }
     }
   };
 
